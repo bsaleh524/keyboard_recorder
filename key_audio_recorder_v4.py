@@ -5,9 +5,8 @@ from pynput import keyboard
 import time
 import threading
 import random
-
-# Does well, but could use some general improvement and quality of life.
-# if they get it wrong, it doesnt know. Also, accepts a recording with no button press.
+import yaml
+import os
 
 # Global variables to keep track of state
 recording = False
@@ -16,11 +15,15 @@ keys_to_press = ['a', 'b', 'c', 'd', 'e', 'f', 'g']  # List of keys to be prompt
 
 # Parameters for audio recording
 sample_rate = 44100  # Sample rate in Hz
-recording_duration = 2  # Duration to record after each key press in seconds
+recording_duration = 1  # Duration to record after each key press in seconds
 stop_event = threading.Event()
 current_key = None
 device_index = None
 audio_buffer = []
+name = ""
+keyboard_name = ""
+keyboard_type = ""
+switch_color = ""
 
 def list_devices():
     devices = sd.query_devices()
@@ -58,6 +61,19 @@ def record_audio(device, duration, filename, start_event, stop_event):
     wav.write(filename, sample_rate, np.int16(myrecording * 32767))
     print(f"Audio saved to {filename}")
 
+def save_yaml(filename, key_pressed):
+    data = {
+        'name': name,
+        'keyboard_name': keyboard_name,
+        'keyboard_type': keyboard_type,
+        'switch_color': switch_color if keyboard_type.lower() == 'mechanical' else None,
+        'key_pressed': key_pressed
+    }
+    yaml_filename = filename.replace('.wav', '.yaml')
+    with open(yaml_filename, 'w') as yaml_file:
+        yaml.dump(data, yaml_file)
+    print(f"YAML saved to {yaml_filename}")
+
 def prompt_next_key():
     next_key = random.choice(keys_to_press)
     print(f"Next key to press: {next_key}")
@@ -77,13 +93,25 @@ def on_press(key):
         key_log.append((k, time.time()))
         print(f"Key {k} pressed.")
         stop_event.set()  # Signal to stop recording
+    else:
+        print(f"Wrong key pressed: {k}. Expected: {current_key}. Please try again.")
+        stop_event.set()  # Signal to stop recording
 
 def on_release(key):
     if key == keyboard.Key.esc:
         return False
 
+def get_user_input():
+    global name, keyboard_name, keyboard_type, switch_color
+    name = input("Enter your name: ")
+    keyboard_name = input("Enter the name of the keyboard: ")
+    keyboard_type = input("Enter the type of keyboard (membrane or mechanical): ")
+    if keyboard_type.lower() == "mechanical":
+        switch_color = input("Enter the Cherry MX switch color type: ")
+
 def main():
     global device_index, current_key, stop_event
+    get_user_input()
     device_index = select_device()
 
     print("Press ESC to stop.")
@@ -92,11 +120,13 @@ def main():
             current_key = prompt_next_key()
             start_event = threading.Event()
             stop_event = threading.Event()
-            recording_thread = threading.Thread(target=record_audio, args=(device_index, recording_duration + 1.0, f"key_press_{current_key}_{int(time.time())}.wav", start_event, stop_event))
+            filename = f"key_press_{current_key}_{int(time.time())}.wav"
+            recording_thread = threading.Thread(target=record_audio, args=(device_index, recording_duration + 0.5, filename, start_event, stop_event))
             recording_thread.start()
             start_event.wait()  # Wait until recording has started
             print(f"Press {current_key} now!")
             recording_thread.join()
+            save_yaml(filename, current_key)
 
             if not listener.running:
                 break
@@ -105,6 +135,12 @@ def main():
 
     # Save key log
     with open('key_log.txt', 'w') as f:
+        f.write(f"Name: {name}\n")
+        f.write(f"Keyboard Name: {keyboard_name}\n")
+        f.write(f"Keyboard Type: {keyboard_type}\n")
+        if keyboard_type.lower() == "mechanical":
+            f.write(f"Cherry MX Switch Color: {switch_color}\n")
+        f.write("Key Logs:\n")
         for key, timestamp in key_log:
             f.write(f"{key}\t{timestamp}\n")
 
