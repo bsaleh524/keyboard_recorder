@@ -7,8 +7,19 @@ import threading
 import random
 import yaml
 import os
+from printout import keyboard_layout
 
-
+# Asked to record each key 10 times, then prompt user
+# before moving to next key too. Based on dictionary below.
+# Problems: 
+#   Give them a visual prompt of what's going on
+#   Timer is not functioning for any keys
+#   If a key is not pressed/wrong key, it counts it anyway
+#   Requires visual prompt every 10 or so keys to let them know
+#   requires newline so they can clearly see what keys are needed.
+#   Esc key must be counted + Press right arrow to stop program.
+#   if a failure happened, have them jump back in.
+#   
 
 # Ensure the data directory exists
 if not os.path.exists('data'):
@@ -17,7 +28,14 @@ if not os.path.exists('data'):
 # Global variables to keep track of state
 recording = False
 key_log = []
-keys_to_press = ['a', 'b', 'c', 'd', 'e', 'f', 'g']  # List of keys to be prompted
+keyboard_dict = {
+    0:'`',1:'1',2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',10:'0',11:'-',12:'=',13:'Backsp',
+    14:'Tab',15:'Q',16:'W',17:'E',18:'R',19:'T',20:'Y',21:'U',22:'I',23:'O',24:'P',25:'[',26:']',27:'\\',
+    28:'Caps',29:'A',30:'S',31:'D',32:'F',33:'G',34:'H',35:'J',36:'K',37:'L',38:';',39:'\'',40:'Enter',
+    41:'Shift',42:'Z',43:'X',44:'C',45:'V',46:'B',47:'N',48:'M',49:',',50:'.',51:'/',52:'Shift',
+    53:'Ctrl',54:'Win',55:'Alt',56:'Space',57:'Alt',58:'Fn',59:'Ctrl',60:'Esc'
+}
+keys_to_press = list(keyboard_dict.values())
 
 # Parameters for audio recording
 sample_rate = 44100  # Sample rate in Hz
@@ -99,9 +117,6 @@ def on_press(key):
         key_log.append((k, time.time()))
         print(f"Key {k} pressed.")
         stop_event.set()  # Signal to stop recording
-    else:
-        print(f"Wrong key pressed: {k}. Expected: {current_key}. Please try again.")
-        stop_event.set()  # Signal to stop recording
 
 def on_release(key):
     if key == keyboard.Key.esc:
@@ -123,6 +138,22 @@ def get_user_input():
     else:
         print("Invalid choice. Defaulting to membrane.")
         keyboard_type = "membrane"
+    print("\n")
+    print(keyboard_layout)
+    print("""
+        Thank you for helping out! Here's how it works.\n
+        The keyboard above shows all of the keys you will press.
+        You will be prompted to press the corresponding key per a prompt here.
+        Each key will be pressed 10 times. Each time, you will be a timer before a 
+             'Press <KEY> now!' prompt appears. 
+        When it appears, press the key. You'll have approximately 2 seconds to do it.\n
+        For example, when the 'a' key is prompted:\n
+        'Press a now! --> Timer goes from 3, 2, 1: 'Press a now!'
+        Repeat 10 times until the next key appears.\n
+        You'll also get a chance to start the next key on your own.
+        If you \n
+        When you are ready, press the LeftArrow to continue.
+            """)
 
 def main():
     global device_index, current_key, stop_event
@@ -131,20 +162,31 @@ def main():
 
     print("Press ESC to stop.")
     with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-        while True:
-            current_key = prompt_next_key()
-            start_event = threading.Event()
-            stop_event = threading.Event()
-            filename = f"data/key_press_{current_key}_{int(time.time())}.wav"
-            recording_thread = threading.Thread(target=record_audio, args=(device_index, recording_duration + 0.5, filename, start_event, stop_event))
-            recording_thread.start()
-            start_event.wait()  # Wait until recording has started
-            print(f"Press {current_key} now!")
-            recording_thread.join()
-            save_yaml(filename, current_key)
+        for key in keys_to_press:
+            for _ in range(10):
+                current_key = key
+                start_event = threading.Event()
+                stop_event = threading.Event()
+                filename = f"data/key_press_{current_key}_{int(time.time())}.wav"
+                recording_thread = threading.Thread(target=record_audio, args=(device_index, recording_duration + 0.5, filename, start_event, stop_event))
+                recording_thread.start()
+                start_event.wait()  # Wait until recording has started
+                print(f"Press {current_key} now!")
+                recording_thread.join()
 
-            if not listener.running:
-                break
+                if stop_event.is_set():
+                    save_yaml(filename, current_key)
+                else:
+                    # If no key press, delete the created audio file
+                    if os.path.exists(filename):
+                        os.remove(filename)
+                    print(f"No key press detected. Reprompting for {current_key}.")
+
+                if not listener.running:
+                    break
+
+            print(f"Finished recording {current_key} 10 times. Press Enter to continue to the next key.")
+            input()
 
     print("Key logging stopped.")
 

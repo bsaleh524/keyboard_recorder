@@ -8,7 +8,7 @@ import random
 import yaml
 import os
 
-
+# includes deletion of data if the recorded file didnt have a key press.
 
 # Ensure the data directory exists
 if not os.path.exists('data'):
@@ -99,9 +99,6 @@ def on_press(key):
         key_log.append((k, time.time()))
         print(f"Key {k} pressed.")
         stop_event.set()  # Signal to stop recording
-    else:
-        print(f"Wrong key pressed: {k}. Expected: {current_key}. Please try again.")
-        stop_event.set()  # Signal to stop recording
 
 def on_release(key):
     if key == keyboard.Key.esc:
@@ -141,7 +138,14 @@ def main():
             start_event.wait()  # Wait until recording has started
             print(f"Press {current_key} now!")
             recording_thread.join()
-            save_yaml(filename, current_key)
+
+            if stop_event.is_set():
+                save_yaml(filename, current_key)
+            else:
+                # If no key press, delete the created audio file
+                if os.path.exists(filename):
+                    os.remove(filename)
+                print(f"No key press detected. Reprompting for {current_key}.")
 
             if not listener.running:
                 break
