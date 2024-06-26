@@ -7,10 +7,9 @@ import threading
 import random
 import yaml
 import os
-from printout import keyboard_layout, instructions
 
-# Asked to record each key 10 times, then prompt user
-# before moving to next key too. Based on dictionary below.
+# Asked to fix issue where each key didnt have a timer on it.
+# Also, fix issue where if a wrong key/not key pressed, it counts.
 # Problems: 
 #   Give them a visual prompt of what's going on
 #   Timer is not functioning for any keys
@@ -35,7 +34,7 @@ keyboard_dict = {
     41:'Shift',42:'Z',43:'X',44:'C',45:'V',46:'B',47:'N',48:'M',49:',',50:'.',51:'/',52:'Shift',
     53:'Ctrl',54:'Win',55:'Alt',56:'Space',57:'Alt',58:'Fn',59:'Ctrl',60:'Esc'
 }
-# keys_to_press = list(keyboard_dict.values())
+keys_to_press = list(keyboard_dict.values())
 
 # Parameters for audio recording
 sample_rate = 44100  # Sample rate in Hz
@@ -48,20 +47,6 @@ name = ""
 keyboard_name = ""
 keyboard_type = ""
 switch_color = ""
-
-def reorder_keyboard_dict(start_key):
-    # Convert the dictionary to a list of tuples (key, value)
-    items = list(keyboard_dict.items())
-    
-    # Find the index of the start_key
-    start_index = items.index((start_key, keyboard_dict[start_key]))
-    
-    # Reorder the list so that the start_key is at the beginning
-    reordered_items = items[start_index:] + items[:start_index]
-    
-    # Convert the reordered list back to a dictionary
-    reordered_dict = dict(reordered_items)
-    return reordered_dict
 
 def list_devices():
     devices = sd.query_devices()
@@ -152,46 +137,41 @@ def get_user_input():
     else:
         print("Invalid choice. Defaulting to membrane.")
         keyboard_type = "membrane"
-    print("\n")
-    print(keyboard_layout)
-    print(instructions)
-    input("Press the ENTER key when ready")
 
 def main():
     global device_index, current_key, stop_event
     get_user_input()
     device_index = select_device()
-    print(keyboard_layout)
-    print(keyboard_dict)
-    starting_idx = input("Select the index to start at.")
-    resorted_dict = reorder_keyboard_dict(int(starting_idx))
-    keys_to_press = list(resorted_dict.values())
+
     print("Press ESC to stop.")
     with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
         for key in keys_to_press:
-            for _ in range(10):
+            count = 0
+            while count < 10:
                 current_key = key
                 start_event = threading.Event()
                 stop_event = threading.Event()
                 filename = f"data/key_press_{current_key}_{int(time.time())}.wav"
                 recording_thread = threading.Thread(target=record_audio, args=(device_index, recording_duration + 0.5, filename, start_event, stop_event))
-                
                 recording_thread.start()
                 start_event.wait()  # Wait until recording has started
-                recording_thread.join()
-                for i in range(3, 0, -1):
-                    print(f"Starting in {i}...")
-                    time.sleep(1)
-                    if i == 1:
-                        recording_thread.join()
                 print(f"Press {current_key} now!")
+
+                for i in range(3, 0, -1):
+                    print(f"Recording in {i}...")
+                    time.sleep(1)
+
+                recording_thread.join()
+
                 if stop_event.is_set():
                     save_yaml(filename, current_key)
+                    count += 1
+                    print(f"Recorded {current_key}: {count}/10")
                 else:
-                    # If no key press, delete the created audio file
+                    # If no key press or incorrect key press, delete the created audio file
                     if os.path.exists(filename):
                         os.remove(filename)
-                    print(f"No key press detected. Reprompting for {current_key}.")
+                    print(f"Incorrect key or no key press detected. Reprompting for {current_key}.")
 
                 if not listener.running:
                     break
