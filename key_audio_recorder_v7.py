@@ -35,6 +35,14 @@ keyboard_dict = {
     41:'Shift',42:'Z',43:'X',44:'C',45:'V',46:'B',47:'N',48:'M',49:',',50:'.',51:'/',52:'Shift',
     53:'Ctrl',54:'Win',55:'Alt',56:'Space',57:'Alt',58:'Fn',59:'Ctrl',60:'Esc'
 }
+
+keyboard_sizes = {0: '100%_FullSize',
+                  1: '96%_Compact',
+                  2: '80%_Tenkeyless',
+                  3: '75%_Compact_Tenkeyless',
+                  4: '65%_Compact',
+                  5: '60%_Mini',
+                  6: 'Unk'}
 # keys_to_press = list(keyboard_dict.values())
 
 # Parameters for audio recording
@@ -47,6 +55,7 @@ audio_buffer = []
 name = ""
 keyboard_name = ""
 keyboard_type = ""
+keyboard_size = ""
 switch_type = ""
 
 def reorder_keyboard_dict(start_key):
@@ -104,6 +113,7 @@ def save_yaml(filename, key_pressed):
         'name': name,
         'keyboard_name': keyboard_name,
         'keyboard_type': keyboard_type,
+        'keyboard_size': keyboard_size,
         'switch_color': switch_color if keyboard_type.lower() == 'mechanical' else None,
         'key_pressed': key_pressed
     }
@@ -111,14 +121,6 @@ def save_yaml(filename, key_pressed):
     with open(yaml_filename, 'w') as yaml_file:
         yaml.dump(data, yaml_file)
     print(f"YAML saved to {yaml_filename}")
-
-def prompt_next_key():
-    next_key = random.choice(keys_to_press)
-    print(f"Next key to press: {next_key}")
-    for i in range(3, 0, -1):
-        print(f"Starting in {i}...")
-        time.sleep(1)
-    return next_key
 
 def on_press(key):
     global current_key
@@ -136,13 +138,18 @@ def on_release(key):
     if key == keyboard.Key.esc:
         return False
 
+def display_sizes():
+    print("\nSelect a keyboard size by entering the corresponding index number:")
+    for index, keysize in keyboard_sizes.items():
+        print(f"{index}: {keysize}")
+
 def display_switches(switches):
-    print("Select a switch by entering the corresponding index number:")
+    print("\nSelect a switch by entering the corresponding index number:")
     for index, switch in switches.items():
         print(f"{index}: {switch}")
 
 def get_user_input():
-    global name, keyboard_name, keyboard_type, switch_color
+    global name, keyboard_name, keyboard_type, switch_color, keyboard_size
     name = input("Enter your name: ")
     keyboard_name = input("Enter the name of the keyboard: ")
     print("Select the type of keyboard:")
@@ -158,6 +165,8 @@ def get_user_input():
     else:
         print("Invalid choice. Defaulting to membrane.")
         keyboard_type = "membrane"
+    display_sizes()
+    keyboard_size = input("Enter the switch type index: ")
     print("\n")
     print(keyboard_layout)
     print(instructions)
