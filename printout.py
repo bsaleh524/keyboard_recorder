@@ -1,3 +1,20 @@
+switches = {
+    0: "Cherry MX Red",
+    1: "Cherry MX Silent Red",
+    2: "Cherry MX Black",
+    3: "Cherry MX Silent Black",
+    4: "Cherry MX Speed Silver",
+    5: "Cherry MX Brown",
+    6: "Cherry MX Clear",
+    7: "Cherry MX Blue",
+    8: "Cherry MX Green",
+    9: "Cherry MX White",
+    10: "Cherry MX Grey",
+    11: "Cherry MX Nature White",
+    12: "Halo Clear",
+    13: "Halo True"
+}
+
 keyboard_layout = """
 
 \_______________________MICROPHONE_________________________/

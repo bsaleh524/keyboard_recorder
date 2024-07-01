@@ -7,7 +7,7 @@ import threading
 import random
 import yaml
 import os
-from printout import keyboard_layout, instructions
+from printout import keyboard_layout, instructions, switches
 
 # Asked to record each key 10 times, then prompt user
 # before moving to next key too. Based on dictionary below.
@@ -47,7 +47,7 @@ audio_buffer = []
 name = ""
 keyboard_name = ""
 keyboard_type = ""
-switch_color = ""
+switch_type = ""
 
 def reorder_keyboard_dict(start_key):
     # Convert the dictionary to a list of tuples (key, value)
@@ -136,6 +136,11 @@ def on_release(key):
     if key == keyboard.Key.esc:
         return False
 
+def display_switches(switches):
+    print("Select a switch by entering the corresponding index number:")
+    for index, switch in switches.items():
+        print(f"{index}: {switch}")
+
 def get_user_input():
     global name, keyboard_name, keyboard_type, switch_color
     name = input("Enter your name: ")
@@ -148,7 +153,8 @@ def get_user_input():
         keyboard_type = "membrane"
     elif keyboard_type_index == 2:
         keyboard_type = "mechanical"
-        switch_color = input("Enter the Cherry MX switch color type: ")
+        display_switches(switches)
+        switch_color = switches[int(input("Enter the switch type index: "))]
     else:
         print("Invalid choice. Defaulting to membrane.")
         keyboard_type = "membrane"
@@ -174,7 +180,7 @@ def main():
                 start_event = threading.Event()
                 stop_event = threading.Event()
                 filename = f"data/key_press_{current_key}_{int(time.time())}.wav"
-                recording_thread = threading.Thread(target=record_audio, args=(device_index, recording_duration + 0.5, filename, start_event, stop_event))
+                recording_thread = threading.Thread(target=record_audio, args=(device_index, recording_duration + 3, filename, start_event, stop_event))
                 
                 recording_thread.start()
                 start_event.wait()  # Wait until recording has started
@@ -182,6 +188,9 @@ def main():
                 for i in range(3, 0, -1):
                     print(f"Starting in {i}...")
                     time.sleep(1)
+                    # if i == 2:
+                        # recording_thread.start()
+                        # start_event.wait()  # Wait until recording has started
                     if i == 1:
                         recording_thread.join()
                 print(f"Press {current_key} now!")
@@ -207,7 +216,7 @@ def main():
         f.write(f"Keyboard Name: {keyboard_name}\n")
         f.write(f"Keyboard Type: {keyboard_type}\n")
         if keyboard_type.lower() == "mechanical":
-            f.write(f"Cherry MX Switch Color: {switch_color}\n")
+            f.write(f"Switch Type: {switch_color}\n")
         f.write("Key Logs:\n")
         for key, timestamp in key_log:
             f.write(f"{key}\t{timestamp}\n")
