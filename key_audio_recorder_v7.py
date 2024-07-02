@@ -29,13 +29,11 @@ if not os.path.exists('data'):
 recording = False
 key_log = []
 keyboard_dict = {
-    0:'`',1:'1',2:'2',3:'3',4:'4',5:'5',6:'6',7:'7',8:'8',9:'9',10:'0',11:'-',12:'=',13:'Backsp',
-    14:'Tab',15:'Q',16:'W',17:'E',18:'R',19:'T',20:'Y',21:'U',22:'I',23:'O',24:'P',25:'[',26:']',27:'\\',
-    28:'Caps',29:'A',30:'S',31:'D',32:'F',33:'G',34:'H',35:'J',36:'K',37:'L',38:';',39:'\'',40:'Enter',
-    41:'Shift',42:'Z',43:'X',44:'C',45:'V',46:'B',47:'N',48:'M',49:',',50:'.',51:'/',52:'Shift',
-    53:'Ctrl',54:'Win',55:'Alt',56:'Space',57:'Alt',58:'Fn',59:'Ctrl',60:'Esc'
+    0: '`', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '0', 11: '-', 12: '=',
+    13: 'Q', 14: 'W', 15: 'E', 16: 'R', 17: 'T', 18: 'Y', 19: 'U', 20: 'I', 21: 'O', 22: 'P', 23: '[', 24: ']', 25: '\\',
+    26: 'A', 27: 'S', 28: 'D', 29: 'F', 30: 'G', 31: 'H', 32: 'J', 33: 'K', 34: 'L', 35: ';', 36: '\'',
+    37: 'Z', 38: 'X', 39: 'C', 40: 'V', 41: 'B', 42: 'N', 43: 'M', 44: ',', 45: '.', 46: '/', 47: keyboard.Key.space,
 }
-
 keyboard_sizes = {0: '100%_FullSize',
                   1: '96%_Compact',
                   2: '80%_Tenkeyless',
@@ -47,7 +45,7 @@ keyboard_sizes = {0: '100%_FullSize',
 
 # Parameters for audio recording
 sample_rate = 44100  # Sample rate in Hz
-recording_duration = 1  # Duration to record after each key press in seconds
+recording_duration = 2  # Duration to record after each key press in seconds
 stop_event = threading.Event()
 current_key = None
 device_index = None
@@ -94,8 +92,10 @@ def record_audio(device, duration, filename, start_event, stop_event):
 
     stream = sd.InputStream(samplerate=sample_rate, channels=1, device=device, callback=audio_callback)
     with stream:
+        stream.start()
         start_event.set()  # Signal that recording has started
         stop_event.wait(duration)  # Wait for the stop signal or timeout
+        time.sleep(1)
         stream.stop()
 
     myrecording = np.array(audio_buffer)
@@ -108,14 +108,15 @@ def record_audio(device, duration, filename, start_event, stop_event):
     wav.write(filename, sample_rate, np.int16(myrecording * 32767))
     print(f"Audio saved to {filename}")
 
-def save_yaml(filename, key_pressed):
+def save_yaml(filename, key_pressed, timestamp):
     data = {
         'name': name,
         'keyboard_name': keyboard_name,
         'keyboard_type': keyboard_type,
         'keyboard_size': keyboard_size,
         'switch_color': switch_color if keyboard_type.lower() == 'mechanical' else None,
-        'key_pressed': key_pressed
+        'key_pressed': key_pressed,
+        'timestamp': timestamp
     }
     yaml_filename = filename.replace('.wav', '.yaml')
     with open(yaml_filename, 'w') as yaml_file:
@@ -170,7 +171,7 @@ def get_user_input():
     print("\n")
     print(keyboard_layout)
     print(instructions)
-    input("Press the ENTER key when ready")
+    input("Press the ENTER key when ready. You will select a recording device now.")
 
 def main():
     global device_index, current_key, stop_event
@@ -184,13 +185,15 @@ def main():
     print("Press ESC to stop.")
     with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
         for key in keys_to_press:
-            for _ in range(10):
+            print(f"\nCurrent key to record is: {key}")
+            created_yamls = []
+            while len(created_yamls) < 10:
                 current_key = key
                 start_event = threading.Event()
                 stop_event = threading.Event()
-                filename = f"data/key_press_{current_key}_{int(time.time())}.wav"
+                current_time = int(time.time())
+                filename = f"data/key_press_{current_key}_{current_time}.wav"
                 recording_thread = threading.Thread(target=record_audio, args=(device_index, recording_duration + 3, filename, start_event, stop_event))
-                
                 recording_thread.start()
                 start_event.wait()  # Wait until recording has started
                 recording_thread.join()
@@ -204,11 +207,14 @@ def main():
                         recording_thread.join()
                 print(f"Press {current_key} now!")
                 if stop_event.is_set():
-                    save_yaml(filename, current_key)
+                    save_yaml(filename, current_key, current_time)
+                    created_yamls.append(filename)
                 else:
                     # If no key press, delete the created audio file
                     if os.path.exists(filename):
                         os.remove(filename)
+                        if len(created_yamls) == 0:
+                            continue
                     print(f"No key press detected. Reprompting for {current_key}.")
 
                 if not listener.running:
