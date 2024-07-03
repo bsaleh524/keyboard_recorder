@@ -170,7 +170,6 @@ def main():
 
     os.rename(filename, audio_filename)
     save_keystrokes(yaml_filename)
-
     print(f"Audio saved to {audio_filename}")
     print(f"Keystrokes saved to {yaml_filename}")
 

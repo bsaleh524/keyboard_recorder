@@ -70,7 +70,9 @@ key_instructions = """
     to the next key. When you see that, you don't have to press the same key again.
 
 When you finish, zip up the data folder and let me know in discord.
-You'll get a link to upload it:
+You'll get a link to upload it.
+
+***PLEASE LISTEN TO A RECORDED FILE TO CONFIRM YOU SELECTED THE CORRECT DEVICE!**
 
 """
 
@@ -84,5 +86,8 @@ keys indicated above from the diagram. Sentences are expected to be lowercase.
 
 Example: "whatup demons, its me, ya boi."
 
+***PLEASE LISTEN TO A RECORDED FILE TO CONFIRM YOU SELECTED THE CORRECT DEVICE!**
 
+When you finish, zip up the data folder and let me know in discord.
+You'll get a link to upload it.
 """
