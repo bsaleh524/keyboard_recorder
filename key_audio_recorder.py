@@ -32,12 +32,12 @@ keyboard_dict = { # make lowercase
     0: '`', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '0', 11: '-', 12: '=',
     13: 'q', 14: 'w', 15: 'e', 16: 'r', 17: 't', 18: 'y', 19: 'u', 20: 'i', 21: 'o', 22: 'p', 23: '[', 24: ']', 25:'\\',
     26: 'a', 27: 's', 28: 'd', 29: 'f', 30: 'g', 31: 'h', 32: 'j', 33: 'k', 34: 'l', 35: ';', 36: '\'',
-    37: 'z', 38: 'x', 39: 'c', 40: 'v', 41: 'b', 42: 'n', 43: 'm', 44: ',', 45: '.', 46: '/', 47: ' ',
+    37: 'z', 38: 'x', 39: 'c', 40: 'v', 41: 'b', 42: 'n', 43: 'm', 44: ',', 45: '.', 46: '/', 47: keyboard.Key.space,
 }
 forbidden_keys = {'\\': 'bcksl',
                   '\'': 'apost',
                   '/': 'fwdsl',
-                  keyboard.Key.space: "_"}
+                  keyboard.Key.space: "space"}
 keyboard_sizes = {0: '100%_FullSize',
                   1: '96%_Compact',
                   2: '80%_Tenkeyless',
@@ -75,6 +75,23 @@ def reorder_keyboard_dict(start_key):
     # Convert the reordered list back to a dictionary
     reordered_dict = dict(reordered_items)
     return reordered_dict
+
+def remove_keys_before_start_key(start_key):
+    # Convert the dictionary to a list of tuples (key, value)
+    items = list(keyboard_dict.items())
+
+    # Find the index of the start_key
+    start_index = items.index((start_key, keyboard_dict[start_key]))
+
+    if start_index is None:
+        raise ValueError(f"Key '{start_key}' not found in dictionary")
+
+    # Remove all items before the start_index
+    remaining_items = items[start_index:]
+
+    # Convert the remaining items back to a dictionary
+    remaining_dict = dict(remaining_items)
+    return remaining_dict
 
 def list_devices():
     devices = sd.query_devices()
@@ -138,7 +155,12 @@ def on_press(key):
         k = key.char
     except AttributeError:
         k = str(key)
-
+    
+    if key == keyboard.Key.space:
+        print("Spacebar key pressed")
+        key_log.append((k, time.time()))
+        print(f"Key {k} pressed.")
+        stop_event.set()  # Signal to stop recording
     if k == current_key:
         key_log.append((k, time.time()))
         print(f"Key {k} pressed.")
@@ -189,7 +211,7 @@ def main():
     print(keyboard_layout)
     print(keyboard_dict)
     starting_idx = input("Select the index to start at.")
-    resorted_dict = reorder_keyboard_dict(int(starting_idx))
+    resorted_dict = remove_keys_before_start_key(int(starting_idx)) # reorder_keyboard_dict(int(starting_idx))
     keys_to_press = list(resorted_dict.values())
     print("Press ESC to stop.")
     with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
