@@ -51,39 +51,26 @@ keyboard_layout_index_map = """
 
 instructions = """
 
-####################### INSTRUCTIONS ############################
-Thank you for helping out! Here's how it works.\n
-The keyboard posted above shows all of the keys you will press.
-You will be prompted to press the corresponding key per a prompt here.
-Each key will be pressed 10 times. Each time, you will see a timer before a 
-        'Press <KEY> now!' prompt appears. 
-When it appears, press the key. You'll have 2 seconds to do it.\n
-For example, when the 'a' key is prompted:\n
-* 'Press a now!'
-* You press the 'a' key
-* Timer goes from 3...2...1
-* 'Press a now!'
-* You press the 'a' key
-* Repeat until 10 samples are collected.\n
-
-Repeat until all key presses and audio is recorded.\n
-You'll start the next key on your own by
-pressing LeftArrow to move on to the next letter.
-
-If you got interrupted and want to start again, select what key to 
-begin from after this prompt.
-
-************************** SETUP *********************************
+************************** Instructions *********************************
       
-* Place the microphone you have at the top of your keyboard
-* Record in an area with no noise
-* Don't make a noise other than your keyboard(breath, sneeze, etc)
-* Tap the key at the same level you would usually type.
-* Fill in the other prompts as best as you can. The more accurate
-      or descriptive your keyboard/switch names are, the better!
+1. Place the microphone you have at the top of your keyboard(by numbers)
+2. Record in an area with no noise.
+3. Don't make a noise other than your keyboard(breath, sneeze, etc).
+4. Tap the key at the same level you would usually type.
+5. Windows will prompt for audio permissions. Allow, and restart script(first time only).
 
-When you finish, zip up the data folder and send it to me:
-                    bsaleh2@jh.edu  
+* This takes maybe 5 minutes to do.
+* If you mess up, you can go back to the key you messed up on and continue by restarting
+    the script.
+* You will be given windows to move to the next key. You can pause before moving
+    to the next key.
+* When you start a new key, there will be a blank before it says it's saving. I can't
+    get around that bug but just know after that, the real recordings will start.
+* When the current key has enough recordings, it will ask to press 'Enter' to go
+    to the next key. When you see that, you don't have to press the same key again.
+
+When you finish, zip up the data folder and let me know in discord.
+You'll get a link to upload it:
 
 """
 
