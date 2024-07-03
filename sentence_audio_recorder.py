@@ -14,7 +14,10 @@ recording = False
 keystrokes = []
 audio_buffer = []
 sample_rate = 44100  # Sample rate for audio recording
-
+keyboard_name = ""
+keyboard_type = "" 
+switch_color = "" 
+keyboard_size = ""
 keyboard_sizes = {0: '100%_FullSize',
                   1: '96%_Compact',
                   2: '80%_Tenkeyless',
@@ -22,6 +25,7 @@ keyboard_sizes = {0: '100%_FullSize',
                   4: '65%_Compact(Default for Macbooks)',
                   5: '60%_Mini',
                   6: 'Unk'}
+recording_device_info = {}
 
 def display_sizes():
     print("\nSelect a keyboard size by entering the corresponding index number:")
@@ -64,12 +68,12 @@ def list_devices():
     return devices
 
 def select_device():
+    global recording_device_info
     devices = list_devices()
     for i, device in enumerate(devices):
         print(f"{i}: {device['name']}")
     device_index = int(input("Select the recording device index: "))
-    selected_device = devices[device_index]
-    print(f"Selected device: {selected_device}")
+    recording_device_info = {micinfo:devices[device_index][micinfo] for micinfo in devices[device_index].keys()}
     return device_index
 
 # Function to handle audio callback
@@ -106,6 +110,7 @@ def record_audio(device, duration, filename, start_event, stop_event):
 
     except Exception as e:
         print(f"An error occurred during recording: {e}")
+# prevent bad keys being hit
 
 # Function to handle key press events
 def on_press(key):
@@ -136,10 +141,24 @@ def ensure_folder_exists(path):
     else:
         print(f"Directory already exists: {path}")
 
+def save_yaml(filename, timestamp):
+    data = {
+        'keyboard_name': keyboard_name,
+        'keyboard_type': keyboard_type,
+        'keyboard_size': keyboard_size,
+        'switch_color': switch_color if keyboard_type.lower() == 'mechanical' else None,
+        'timestamp': timestamp
+    }
+    data.update(recording_device_info)
+    yaml_filename = filename.replace('.wav', '.yaml')
+    with open(yaml_filename, 'w') as yaml_file:
+        yaml.dump(data, yaml_file)
+    print(f"YAML saved to {yaml_filename}")
+
 # Main function
 def main():
-    global recording, stop_event
-
+    global recording, stop_event, keyboard_name, keyboard_type, switch_color, keyboard_size
+    get_user_input()
     device_index = select_device()
 
     print('Waiting for recording thread to start')
@@ -167,11 +186,13 @@ def main():
     folder_path = "data/sentence_data"
     audio_filename = os.path.join(folder_path, f"sentence_{current_time}.wav")
     yaml_filename = os.path.join(folder_path, f"keystrokes_{current_time}.yaml")
-
+    record_filename = os.path.join(folder_path, f"recording_{current_time}.yaml")
     os.rename(filename, audio_filename)
     save_keystrokes(yaml_filename)
+    save_yaml(record_filename, current_time)
     print(f"Audio saved to {audio_filename}")
     print(f"Keystrokes saved to {yaml_filename}")
+    print(f"Recording info saved to {record_filename}")
 
 if __name__ == "__main__":
     main()
