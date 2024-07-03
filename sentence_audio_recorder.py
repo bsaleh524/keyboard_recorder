@@ -26,6 +26,15 @@ keyboard_sizes = {0: '100%_FullSize',
                   5: '60%_Mini',
                   6: 'Unk'}
 recording_device_info = {}
+keyboard_dict = { # make lowercase
+    0: '`', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '0', 11: '-', 12: '=',
+    13: 'q', 14: 'w', 15: 'e', 16: 'r', 17: 't', 18: 'y', 19: 'u', 20: 'i', 21: 'o', 22: 'p', 23: '[', 24: ']', 25:'\\',
+    26: 'a', 27: 's', 28: 'd', 29: 'f', 30: 'g', 31: 'h', 32: 'j', 33: 'k', 34: 'l', 35: ';', 36: '\'',
+    37: 'z', 38: 'x', 39: 'c', 40: 'v', 41: 'b', 42: 'n', 43: 'm', 44: ',', 45: '.', 46: '/', 47: keyboard.Key.space,
+}
+
+# Reverse the dictionary for easy lookup
+allowed_keys = {v: k for k, v in keyboard_dict.items()}
 
 def display_sizes():
     print("\nSelect a keyboard size by entering the corresponding index number:")
@@ -126,6 +135,27 @@ def on_press(key):
         except AttributeError:
             keystrokes.append(str(key))
 
+def on_press2(key):
+    try:
+        # Convert key to its corresponding string representation
+        k = key.char if hasattr(key, 'char') else key
+        
+        # Check if the key is allowed
+        if k in allowed_keys or k == keyboard.Key.space:
+            keystrokes.append(str(k))
+        else:
+            print(f"Invalid key pressed: {k}")
+            save_keystrokes('keystrokes.yaml')
+            return False  # Stop listener
+    except AttributeError:
+        # Handle special keys
+        if key in allowed_keys.values():
+            keystrokes.append(str(key))
+        else:
+            print(f"Invalid key pressed: {key}")
+            save_keystrokes('keystrokes.yaml')
+            return False  # Stop listener
+
 # Function to save keystrokes to a .yaml file
 def save_keystrokes(filename):
     global keystrokes
@@ -177,7 +207,7 @@ def main():
 
     print("Please start typing. Press ESC to stop recording.")
 
-    with keyboard.Listener(on_press=on_press) as listener:
+    with keyboard.Listener(on_press=on_press2) as listener:
         listener.join()
 
     stop_event.set()
