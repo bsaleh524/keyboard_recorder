@@ -28,12 +28,16 @@ if not os.path.exists('data'):
 # Global variables to keep track of state
 recording = False
 key_log = []
-keyboard_dict = {
+keyboard_dict = { # make lowercase
     0: '`', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '0', 11: '-', 12: '=',
-    13: 'Q', 14: 'W', 15: 'E', 16: 'R', 17: 'T', 18: 'Y', 19: 'U', 20: 'I', 21: 'O', 22: 'P', 23: '[', 24: ']', 25: '\\',
-    26: 'A', 27: 'S', 28: 'D', 29: 'F', 30: 'G', 31: 'H', 32: 'J', 33: 'K', 34: 'L', 35: ';', 36: '\'',
-    37: 'Z', 38: 'X', 39: 'C', 40: 'V', 41: 'B', 42: 'N', 43: 'M', 44: ',', 45: '.', 46: '/', 47: keyboard.Key.space,
+    13: 'q', 14: 'w', 15: 'e', 16: 'r', 17: 't', 18: 'y', 19: 'u', 20: 'i', 21: 'o', 22: 'p', 23: '[', 24: ']', 25:'\\',
+    26: 'a', 27: 's', 28: 'd', 29: 'f', 30: 'g', 31: 'h', 32: 'j', 33: 'k', 34: 'l', 35: ';', 36: '\'',
+    37: 'z', 38: 'x', 39: 'c', 40: 'v', 41: 'b', 42: 'n', 43: 'm', 44: ',', 45: '.', 46: '/', 47: ' ',
 }
+forbidden_keys = {'\\': 'bcksl',
+                  '\'': 'apost',
+                  '/': 'fwdsl',
+                  keyboard.Key.space: "_"}
 keyboard_sizes = {0: '100%_FullSize',
                   1: '96%_Compact',
                   2: '80%_Tenkeyless',
@@ -46,6 +50,7 @@ keyboard_sizes = {0: '100%_FullSize',
 # Parameters for audio recording
 sample_rate = 44100  # Sample rate in Hz
 recording_duration = 2  # Duration to record after each key press in seconds
+number_of_recordings = 1
 stop_event = threading.Event()
 current_key = None
 device_index = None
@@ -55,6 +60,7 @@ keyboard_name = ""
 keyboard_type = ""
 keyboard_size = ""
 switch_type = ""
+recording_device_info = {}
 
 def reorder_keyboard_dict(start_key):
     # Convert the dictionary to a list of tuples (key, value)
@@ -75,10 +81,12 @@ def list_devices():
     return devices
 
 def select_device():
+    global recording_device_info
     devices = list_devices()
     for i, device in enumerate(devices):
         print(f"{i}: {device['name']}")
     device_index = int(input("Select the recording device index: "))
+    recording_device_info = {micinfo:devices[device_index][micinfo] for micinfo in devices[device_index].keys()}
     return device_index
 
 def audio_callback(indata, frames, time, status):
@@ -118,6 +126,7 @@ def save_yaml(filename, key_pressed, timestamp):
         'key_pressed': key_pressed,
         'timestamp': timestamp
     }
+    data.update(recording_device_info)
     yaml_filename = filename.replace('.wav', '.yaml')
     with open(yaml_filename, 'w') as yaml_file:
         yaml.dump(data, yaml_file)
@@ -187,17 +196,21 @@ def main():
         for key in keys_to_press:
             print(f"\nCurrent key to record is: {key}")
             created_yamls = []
-            while len(created_yamls) < 10:
+            while len(created_yamls) < number_of_recordings:
                 current_key = key
                 start_event = threading.Event()
                 stop_event = threading.Event()
                 current_time = int(time.time())
-                filename = f"data/key_press_{current_key}_{current_time}.wav"
-                recording_thread = threading.Thread(target=record_audio, args=(device_index, recording_duration + 3, filename, start_event, stop_event))
+                if current_key in forbidden_keys.keys():
+                    filekey = forbidden_keys[current_key]
+                    filename = f"data/key_press_{filekey}_{current_time}.wav"
+                else:
+                    filename = f"data/key_press_{current_key}_{current_time}.wav"
+                recording_thread = threading.Thread(target=record_audio, args=(device_index, recording_duration, filename, start_event, stop_event))
                 recording_thread.start()
                 start_event.wait()  # Wait until recording has started
                 recording_thread.join()
-                for i in range(3, 0, -1):
+                for i in range(2, 0, -1):
                     print(f"Starting in {i}...")
                     time.sleep(1)
                     # if i == 2:
