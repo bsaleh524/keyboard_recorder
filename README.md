@@ -1,5 +1,5 @@
 # keyboard_recorder
-Data collection of keyboard and microhpone info per Adavanced Applied Machine Learning for JHU's research project.
+Data collection of keyboard and microhpone info per Adavanced Applied Machine Learning for JHU's research project(SUmmer 2024).
 
 ```python
 \_______________________MICROPHONE_________________________/
@@ -21,22 +21,27 @@ Data collection of keyboard and microhpone info per Adavanced Applied Machine Le
 - `key_audio_recorder.py` records individual keystrokes. Pick a microphone and then it prompts for 10 regular presses of the keys.
 - `sentence_audio_recorder.py` records sentences. Pick a microphone and then prompts for a sentence. After typing, hit escape to finish the recording. 
 
-* To install, it requires python 3.9+. Create a virtual environment
+## Installation and setup
+* This package isn't meant to be installed. Just run from the cloned down folder. To install dependencies, it requires python 3.9+.
+* Create a virtual environment
 
-`python3 -m venv myproject-env`
+`python3 -m venv keyboard_env`
 
 * Then activate it
 
 - Windows
-`myproject-env\Scripts\activate`
+`keyboard_env\Scripts\activate`
 
 - Mac
-`source myproject-env/bin/activate`
+`source keyboard_env/bin/activate`
 
 * Then install the requirements.
 
 `pip install -r requirements.txt`
 
-
 To record keys, use `python key_audio_recorder.py`
 To record a sentence, use `python sentence_audio_recorder.py`
+
+##
+Privacy
+
