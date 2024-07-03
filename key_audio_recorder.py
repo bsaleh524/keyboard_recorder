@@ -50,12 +50,11 @@ keyboard_sizes = {0: '100%_FullSize',
 # Parameters for audio recording
 sample_rate = 44100  # Sample rate in Hz
 recording_duration = 2  # Duration to record after each key press in seconds
-number_of_recordings = 1
+number_of_recordings = 10
 stop_event = threading.Event()
 current_key = None
 device_index = None
 audio_buffer = []
-name = ""
 keyboard_name = ""
 keyboard_type = ""
 keyboard_size = ""
@@ -135,7 +134,6 @@ def record_audio(device, duration, filename, start_event, stop_event):
 
 def save_yaml(filename, key_pressed, timestamp):
     data = {
-        'name': name,
         'keyboard_name': keyboard_name,
         'keyboard_type': keyboard_type,
         'keyboard_size': keyboard_size,
@@ -181,8 +179,7 @@ def display_switches(switches):
         print(f"{index}: {switch}")
 
 def get_user_input():
-    global name, keyboard_name, keyboard_type, switch_color, keyboard_size
-    name = input("Enter your name: ")
+    global keyboard_name, keyboard_type, switch_color, keyboard_size
     keyboard_name = input("Enter the name of the keyboard: ")
     print("Select the type of keyboard:")
     print("1: Membrane")
@@ -262,7 +259,6 @@ def main():
 
     # Save key log
     with open('data/key_log.txt', 'w') as f:
-        f.write(f"Name: {name}\n")
         f.write(f"Keyboard Name: {keyboard_name}\n")
         f.write(f"Keyboard Type: {keyboard_type}\n")
         if keyboard_type.lower() == "mechanical":
