@@ -47,10 +47,9 @@ def record_audio(device, duration, filename, start_event, stop_event):
             stream.start()
             start_event.set()  # Signal that recording has started
             stop_event.wait(duration)  # Wait for the stop signal or timeout
-            time.sleep(1)
             stream.stop()
 
-        myrecording = np.array(audio_buffer)
+        myrecording = np.concatenate(audio_buffer, axis=0)
 
         # Check and handle invalid values
         if not np.isfinite(myrecording).all():
@@ -65,9 +64,10 @@ def record_audio(device, duration, filename, start_event, stop_event):
 
 # Function to handle key press events
 def on_press(key):
-    global recording, keystrokes
+    global recording, keystrokes, stop_event
 
     if key == keyboard.Key.esc:
+        stop_event.set()
         recording = False
         return False  # Stop listener
     else:
@@ -75,17 +75,6 @@ def on_press(key):
             keystrokes.append(key.char)
         except AttributeError:
             keystrokes.append(str(key))
-
-# Function to save audio data to a .wav file
-def save_audio(filename):
-    global audio_buffer, sample_rate
-
-    audio_data_np = np.concatenate(audio_buffer, axis=0)
-    with wave.open(filename, 'wb') as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(2)  # 2 bytes per sample
-        wf.setframerate(sample_rate)
-        wf.writeframes(audio_data_np.tobytes())
 
 # Function to save keystrokes to a .yaml file
 def save_keystrokes(filename):
@@ -104,20 +93,23 @@ def ensure_folder_exists(path):
 
 # Main function
 def main():
-    global recording
+    global recording, stop_event
 
     device_index = select_device()
 
     print('Waiting for recording thread to start')
-    
+
     recording = True
     start_event = threading.Event()
     stop_event = threading.Event()
     current_time = int(time.time())
+    ensure_folder_exists("sentence_data")
     filename = f"sentence_data/sentence_{current_time}.wav"
+
+
     audio_thread = threading.Thread(target=record_audio, args=(device_index, 30, filename, start_event, stop_event))
     audio_thread.start()
-    # start_event.wait() # Wait for recording to start
+    start_event.wait()  # Wait for recording to start
 
     print("Please start typing. Press ESC to stop recording.")
 
@@ -127,12 +119,11 @@ def main():
     stop_event.set()
     audio_thread.join()
 
-    folder_path = "recordings"
-    ensure_folder_exists(folder_path)
-    audio_filename = os.path.join(folder_path, f"{filename}")
+    folder_path = "sentence_data"
+    audio_filename = os.path.join(folder_path, f"sentence_{current_time}.wav")
     yaml_filename = os.path.join(folder_path, f"keystrokes_{current_time}.yaml")
 
-    # os.rename("temp.wav", audio_filename)
+    os.rename(filename, audio_filename)
     save_keystrokes(yaml_filename)
 
     print(f"Audio saved to {audio_filename}")
