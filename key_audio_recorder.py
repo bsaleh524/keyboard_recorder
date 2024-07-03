@@ -256,6 +256,7 @@ def main():
                     break
 
             print(f"\n\nFinished recording {current_key} {number_of_recordings} times.")
+            print(f"\n\nCheck the recording is audible and not static.(only the first time)")
             print(f"Press Enter to continue to the next key.")
             input()
 
