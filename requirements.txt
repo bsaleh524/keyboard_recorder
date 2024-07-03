@@ -5,6 +5,5 @@ numpy
 pynput
 pyyaml
 scipy
-yaml
 sounddevice
 pyyaml
