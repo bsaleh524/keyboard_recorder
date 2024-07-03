@@ -50,7 +50,7 @@ keyboard_sizes = {0: '100%_FullSize',
 # Parameters for audio recording
 sample_rate = 44100  # Sample rate in Hz
 recording_duration = 2  # Duration to record after each key press in seconds
-number_of_recordings = 1
+number_of_recordings = 10
 stop_event = threading.Event()
 current_key = None
 device_index = None
@@ -255,7 +255,7 @@ def main():
                 if not listener.running:
                     break
 
-            print(f"Finished recording {current_key} {number_of_recordings} times.")
+            print(f"\n\nFinished recording {current_key} {number_of_recordings} times.")
             print(f"Press Enter to continue to the next key.")
             input()
 

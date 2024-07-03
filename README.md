@@ -1,5 +1,5 @@
 # keyboard_recorder
-Data collection of keyboard and microhpone info per Adavanced Applied Machine Learning for JHU's research project(SUmmer 2024).
+Data collection of keyboard and microhpone info per Adavanced Applied Machine Learning for JHU's research project(Summer 2024).
 
 ```python
 \_______________________MICROPHONE_________________________/
