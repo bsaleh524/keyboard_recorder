@@ -7,12 +7,57 @@ import yaml
 from pynput import keyboard
 import os
 import scipy.io.wavfile as wav
+from printout import switches, sent_instructions, keyboard_layout
 
 # Define global variables
 recording = False
 keystrokes = []
 audio_buffer = []
 sample_rate = 44100  # Sample rate for audio recording
+
+keyboard_sizes = {0: '100%_FullSize',
+                  1: '96%_Compact',
+                  2: '80%_Tenkeyless',
+                  3: '75%_Compact_Tenkeyless',
+                  4: '65%_Compact(Default for Macbooks)',
+                  5: '60%_Mini',
+                  6: 'Unk'}
+
+def display_sizes():
+    print("\nSelect a keyboard size by entering the corresponding index number:")
+    for index, keysize in keyboard_sizes.items():
+        print(f"{index}: {keysize}")
+
+def display_switches(switches):
+    print("\nSelect a switch by entering the corresponding index number:")
+    for index, switch in switches.items():
+        print(f"{index}: {switch}")
+
+def get_user_input():
+    global keyboard_name, keyboard_type, switch_color, keyboard_size
+    keyboard_name = input("Enter the name of the keyboard: ")
+    print("Select the type of keyboard:")
+    print("1: Membrane")
+    print("2: Mechanical")
+    print("3: Magic Keyboard(Scissor) for Macs")
+    keyboard_type_index = int(input("Enter the index of your choice: "))
+    if keyboard_type_index == 1:
+        keyboard_type = "membrane"
+    elif keyboard_type_index == 2:
+        keyboard_type = "mechanical"
+        display_switches(switches)
+        switch_color = switches[int(input("Enter the switch type index: "))]
+    elif keyboard_type_index == 3:
+        keyboard_type = "scissor"
+    else:
+        print("Invalid choice. Defaulting to membrane.")
+        keyboard_type = "membrane"
+    display_sizes()
+    keyboard_size = keyboard_sizes[int(input("Enter the switch type index: "))]
+    print("\n")
+    print(keyboard_layout)
+    print(sent_instructions)
+    input("Press the ENTER key when ready. You will select a recording device now.")
 
 def list_devices():
     devices = sd.query_devices()
@@ -103,8 +148,8 @@ def main():
     start_event = threading.Event()
     stop_event = threading.Event()
     current_time = int(time.time())
-    ensure_folder_exists("sentence_data")
-    filename = f"sentence_data/sentence_{current_time}.wav"
+    ensure_folder_exists("data/sentence_data")
+    filename = f"data/sentence_data/sentence_{current_time}.wav"
 
 
     audio_thread = threading.Thread(target=record_audio, args=(device_index, 30, filename, start_event, stop_event))
@@ -119,7 +164,7 @@ def main():
     stop_event.set()
     audio_thread.join()
 
-    folder_path = "sentence_data"
+    folder_path = "data/sentence_data"
     audio_filename = os.path.join(folder_path, f"sentence_{current_time}.wav")
     yaml_filename = os.path.join(folder_path, f"keystrokes_{current_time}.yaml")
 

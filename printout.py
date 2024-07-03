@@ -49,7 +49,7 @@ keyboard_layout_index_map = """
 """
 
 
-instructions = """
+key_instructions = """
 
 ************************** Instructions *********************************
       
@@ -57,7 +57,7 @@ instructions = """
 2. Record in an area with no noise.
 3. Don't make a noise other than your keyboard(breath, sneeze, etc).
 4. Tap the key at the same level you would usually type.
-5. Windows will prompt for audio permissions. Allow, and restart script(first time only).
+5. Your OS may prompt for audio permissions. Allow, and restart script(first time only).
 
 * This takes maybe 5 minutes to do.
 * If you mess up, you can go back to the key you messed up on and continue by restarting
@@ -75,4 +75,14 @@ You'll get a link to upload it:
 """
 
 
+sent_instructions = """
 
+************************** Instructions *********************************
+      
+When you you ready, hit enter to start typing. You can only use the
+keys indicated above from the diagram. Sentences are expected to be lowercase.
+
+Example: "whatup demons, its me, ya boi."
+
+
+"""

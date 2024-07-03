@@ -7,7 +7,7 @@ import threading
 import random
 import yaml
 import os
-from printout import keyboard_layout, instructions, switches
+from printout import keyboard_layout, key_instructions, switches
 
 # Asked to record each key 10 times, then prompt user
 # before moving to next key too. Based on dictionary below.
@@ -22,8 +22,8 @@ from printout import keyboard_layout, instructions, switches
 #   
 
 # Ensure the data directory exists
-if not os.path.exists('data'):
-    os.makedirs('data')
+if not os.path.exists('data/key_data'):
+    os.makedirs('data/key_data')
 
 # Global variables to keep track of state
 recording = False
@@ -42,7 +42,7 @@ keyboard_sizes = {0: '100%_FullSize',
                   1: '96%_Compact',
                   2: '80%_Tenkeyless',
                   3: '75%_Compact_Tenkeyless',
-                  4: '65%_Compact',
+                  4: '65%_Compact(Default for Macbooks)',
                   5: '60%_Mini',
                   6: 'Unk'}
 # keys_to_press = list(keyboard_dict.values())
@@ -50,7 +50,7 @@ keyboard_sizes = {0: '100%_FullSize',
 # Parameters for audio recording
 sample_rate = 44100  # Sample rate in Hz
 recording_duration = 2  # Duration to record after each key press in seconds
-number_of_recordings = 10
+number_of_recordings = 1
 stop_event = threading.Event()
 current_key = None
 device_index = None
@@ -184,6 +184,7 @@ def get_user_input():
     print("Select the type of keyboard:")
     print("1: Membrane")
     print("2: Mechanical")
+    print("3: Magic Keyboard(Scissor) for Macs")
     keyboard_type_index = int(input("Enter the index of your choice: "))
     if keyboard_type_index == 1:
         keyboard_type = "membrane"
@@ -191,14 +192,16 @@ def get_user_input():
         keyboard_type = "mechanical"
         display_switches(switches)
         switch_color = switches[int(input("Enter the switch type index: "))]
+    elif keyboard_type_index == 3:
+        keyboard_type = "scissor"
     else:
         print("Invalid choice. Defaulting to membrane.")
         keyboard_type = "membrane"
     display_sizes()
-    keyboard_size = input("Enter the switch type index: ")
+    keyboard_size = keyboard_sizes[int(input("Enter the switch type index: "))]
     print("\n")
     print(keyboard_layout)
-    print(instructions)
+    print(key_instructions)
     input("Press the ENTER key when ready. You will select a recording device now.")
 
 def main():
@@ -222,9 +225,9 @@ def main():
                 current_time = int(time.time())
                 if current_key in forbidden_keys.keys():
                     filekey = forbidden_keys[current_key]
-                    filename = f"data/key_press_{filekey}_{current_time}.wav"
+                    filename = f"data/key_data/key_press_{filekey}_{current_time}.wav"
                 else:
-                    filename = f"data/key_press_{current_key}_{current_time}.wav"
+                    filename = f"data/key_data/key_press_{current_key}_{current_time}.wav"
                 recording_thread = threading.Thread(target=record_audio, args=(device_index, recording_duration, filename, start_event, stop_event))
                 recording_thread.start()
                 start_event.wait()  # Wait until recording has started
@@ -252,17 +255,19 @@ def main():
                 if not listener.running:
                     break
 
-            print(f"Finished recording {current_key} 10 times. Press Enter to continue to the next key.")
+            print(f"Finished recording {current_key} {number_of_recordings} times.")
+            print(f"Press Enter to continue to the next key.")
             input()
 
     print("Key logging stopped.")
 
     # Save key log
-    with open('data/key_log.txt', 'w') as f:
+    with open('data/key_data/key_log.txt', 'w') as f:
         f.write(f"Keyboard Name: {keyboard_name}\n")
         f.write(f"Keyboard Type: {keyboard_type}\n")
         if keyboard_type.lower() == "mechanical":
             f.write(f"Switch Type: {switch_color}\n")
+        f.write(f"Keyboard Size: {keyboard_size}\n")
         f.write("Key Logs:\n")
         for key, timestamp in key_log:
             f.write(f"{key}\t{timestamp}\n")
