@@ -1,0 +1,22 @@
+default_high_input_latency: 0.0421875
+default_high_output_latency: 0.1
+default_low_input_latency: 0.03285416666666666
+default_low_output_latency: 0.01
+default_samplerate: 48000.0
+hostapi: 0
+index: 0
+key_pressed: !!python/object/apply:pynput.keyboard._darwin.Key
+- !!python/object:pynput.keyboard._darwin.KeyCode
+  _is_media: null
+  char: ' '
+  combining: null
+  is_dead: false
+  vk: 49
+keyboard_name: Macbook Pro 2021
+keyboard_size: 65%_Compact(Default for Macbooks)
+keyboard_type: scissor
+max_input_channels: 1
+max_output_channels: 0
+name: MacBook Pro Microphone
+switch_color: null
+timestamp: 1720009207

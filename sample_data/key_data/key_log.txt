@@ -1,0 +1,6 @@
+Keyboard Name: Macbook Pro 2021
+Keyboard Type: scissor
+Keyboard Size: 65%_Compact(Default for Macbooks)
+Key Logs:
+/	1720009202.862456
+Key.space	1720009209.0969548
