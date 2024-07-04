@@ -59,7 +59,7 @@ key_instructions = """
 4. Tap the key at the same level you would usually type.
 5. Your OS may prompt for audio permissions. Allow, and restart script(first time only).
 
-* This takes maybe 5 minutes to do.
+* This takes maybe 15-20 minutes to do.
 * If you mess up, you can go back to the key you messed up on and continue by restarting
     the script.
 * You will be given windows to move to the next key. You can pause before moving
