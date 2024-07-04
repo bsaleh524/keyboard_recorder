@@ -49,7 +49,7 @@ keyboard_sizes = {0: '100%_FullSize',
 
 # Parameters for audio recording
 sample_rate = 44100  # Sample rate in Hz
-recording_duration = 2  # Duration to record after each key press in seconds
+recording_duration = 1.5  # Duration to record after each key press in seconds
 number_of_recordings = 10
 stop_event = threading.Event()
 current_key = None
@@ -216,7 +216,8 @@ def main():
     print("Press ESC to stop.")
     with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
         for key in keys_to_press:
-            print(f"\nCurrent key to record is: {key}")
+            print(f"\nCurrent key to record is: {key}.")
+            print(f"WAIT FOR THE COUNTDOWN BEFORE PRESSING ANYTHING!!!")
             created_yamls = []
             while len(created_yamls) < number_of_recordings:
                 current_key = key
@@ -257,7 +258,7 @@ def main():
 
             print(f"\n\nFinished recording {current_key} {number_of_recordings} times.")
             print(f"\n\nCheck the recording is audible and not static.(only the first time)")
-            print(f"Press Enter to continue to the next key.")
+            print(f"Press Enter to continue to the next key and wait for the prompt.")
             input()
 
     print("Key logging stopped.")
