@@ -49,7 +49,7 @@ keyboard_sizes = {0: '100%_FullSize',
 
 # Parameters for audio recording
 sample_rate = 44100  # Sample rate in Hz
-recording_duration = 1.2  # Duration to record after each key press in seconds
+recording_duration = 1.5  # Duration to record after each key press in seconds
 number_of_recordings = 10
 stop_event = threading.Event()
 current_key = None
