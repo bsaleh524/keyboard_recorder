@@ -13,8 +13,8 @@ switches = {
     11: "Cherry MX Nature White",
     12: "Halo Clear",
     13: "Halo True",
-    14: "Unk",
-    15: "Not in List",
+    14: "Unk/Not here(Clicky)",
+    15: "Unk/Not here(Smooth)",
 }
 
 keyboard_layout = """
