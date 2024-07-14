@@ -162,5 +162,7 @@ cython_debug/
 #.idea/
 
 data/
+data_copy/
+preprocessed_data/
 *.wav
 *.yaml
