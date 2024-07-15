@@ -9,16 +9,31 @@ from scipy.io import wavfile
 import matplotlib.pyplot as plt
 import librosa
 import os
+from CoAtNet import CoAtNet
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+elif torch.backends.mps.is_available():
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
+print(device)
 
+keyboard_dict = { # make lowercase
+    0: '`', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '0', 11: '-', 12: '=',
+    13: 'q', 14: 'w', 15: 'e', 16: 'r', 17: 't', 18: 'y', 19: 'u', 20: 'i', 21: 'o', 22: 'p', 23: '[', 24: ']', 25:'bcksl',
+    26: 'a', 27: 's', 28: 'd', 29: 'f', 30: 'g', 31: 'h', 32: 'j', 33: 'k', 34: 'l', 35: ';', 36: 'apost',
+    37: 'z', 38: 'x', 39: 'c', 40: 'v', 41: 'b', 42: 'n', 43: 'm', 44: ',', 45: '.', 46: 'fwdsl', 47: 'space',
+}
+keyboard_reverse_map = {v: k for k, v in keyboard_dict.items()}
 # Assume we have the following paths. Depend on your system, it could vary
-AUDIO_DIR = '/your/audio/directory'
-MODEL_PATH = '/path/to/save/your/model.pt'
+AUDIO_DIR = 'preprocessed_data/'
+MODEL_PATH = 'models/model.pt'
 
 
 # The following class help transform our input into mel-spectrogram
 class ToMelSpectrogram:
     def __call__(self, samples):
-        return librosa.feature.melspectrogram(samples, n_mels=64, length=1024, hop_length=225)
+        return librosa.feature.melspectrogram(samples, n_mels=64, win_length=1024, hop_length=500)
 
 
 # This class is to load audio data and apply the transformation
@@ -37,7 +52,10 @@ class AudioDataset(torch.utils.data.Dataset):
                                    duration=1.0,
                                    mono=True)
 
-        label = self.file_list[idx].split("_")[0]  # Assuming the file name is 'label_otherInfo.wav'
+        label_char = self.file_list[idx].split("_")[2]  # Assuming the file name is 'label_otherInfo.wav'
+
+        # Encode the label using char_to_idx dictionary
+        label = keyboard_reverse_map[label_char]
 
         if self.transform:
             waveform = self.transform(waveform)
@@ -50,12 +68,12 @@ def train():
     transform = Compose([ToMelSpectrogram(), ToTensor()])
 
     dataset = AudioDataset(AUDIO_DIR, transform=transform)
-    train_set, val_set = train_test_split(dataset, test_size=0.2, stratify=dataset.targets)
+    train_set, val_set = train_test_split(dataset, test_size=0.2) #, stratify=dataset.label)
     train_loader = DataLoader(dataset=train_set, batch_size=16, shuffle=True)
     val_loader = DataLoader(dataset=val_set, batch_size=16, shuffle=True)
 
-    model = CoAtNet()  # Assuming we have this class implemented following the paper or using a library
-    model = model.cuda()
+    model = CoAtNet(num_classes=48)  # Assuming we have this class implemented following the paper or using a library
+    model = model.to(device)
     optimizer = optim.Adam(model.parameters(), lr=5e-4)
     criterion = nn.CrossEntropyLoss()
 
@@ -64,8 +82,8 @@ def train():
     for epoch in range(num_epochs):
         model.train()
         for inputs, labels in train_loader:
-            inputs = inputs.cuda()
-            labels = labels.cuda()
+            inputs = inputs.to(device)
+            labels = labels.to(device)
 
             optimizer.zero_grad()
 
@@ -86,8 +104,8 @@ def train():
                 correct = 0
                 total = 0
                 for inputs, labels in val_loader:
-                    inputs = inputs.cuda()
-                    labels = labels.cuda()
+                    inputs = inputs.to(device)
+                    labels = labels.to(device)
                     outputs = model(inputs)
                     _, predicted = torch.max(outputs.data, 1)
                     total += labels.size(0)

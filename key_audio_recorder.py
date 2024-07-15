@@ -38,13 +38,15 @@ forbidden_keys = {'\\': 'bcksl',
                   '\'': 'apost',
                   '/': 'fwdsl',
                   keyboard.Key.space: "space"}
-keyboard_sizes = {0: '100%_FullSize',
-                  1: '96%_Compact',
-                  2: '80%_Tenkeyless',
-                  3: '75%_Compact_Tenkeyless',
-                  4: '65%_Compact(Default for Macbooks)',
-                  5: '60%_Mini',
-                  6: 'Unk'}
+keyboard_sizes = {
+    6: 'Unk',
+    5: '100%_FullSize',
+    4: '96%_Compact',
+    3: '80%_Tenkeyless',
+    2: '75%_Compact_Tenkeyless',
+    1: '65%_Compact(Default for Macbooks)',
+    0: '60%_Mini',
+}
 # keys_to_press = list(keyboard_dict.values())
 
 # Parameters for audio recording
