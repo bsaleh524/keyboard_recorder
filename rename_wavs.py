@@ -38,7 +38,7 @@ def rename_and_copy_files(base_folder, file_extensions, preprocessed_folder):
                                 print(f"Copied: {old_path} -> {dest_path}")
 
 # Set the base folder path where the user folders are located
-base_folder_path = 'data_copy'
+base_folder_path = 'data'
 # List of file extensions to rename and copy
 file_extensions = ['.wav', '.yaml']
 # Set the destination folder for preprocessed .wav files
