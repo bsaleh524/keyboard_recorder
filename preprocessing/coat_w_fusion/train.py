@@ -7,6 +7,8 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 from scipy.io import wavfile
 import matplotlib.pyplot as plt
+import pandas as pd
+import pickle
 import librosa
 import os
 from CoAtNet import CoAtNet
@@ -38,50 +40,73 @@ class ToMelSpectrogram:
 
 # This class is to load audio data and apply the transformation
 class AudioDataset(torch.utils.data.Dataset):
-    def __init__(self, data_dir, transform=None):
-        self.data_dir = data_dir
+    def __init__(self, data_dir, pickle_file, transform=None):
+        # self.data_dir = data_dir
+        self.image_dir = data_dir
         self.transform = transform
-        self.file_list = os.listdir(self.data_dir)
+        # self.file_list = os.listdir(self.image_dir)
+        self.tabular = pd.read_pickle(pickle_file)
 
     def __len__(self):
-        return len(self.file_list)
+        # return len(self.file_list)
+        return len(self.tabular)
 
     def __getitem__(self, idx):
-        waveform, _ = librosa.load(os.path.join(self.data_dir, self.file_list[idx]),
+        # ensures we select indexing rows of the dataframe
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
+        # Acquire entire row per index asked for by batch
+        tabular = self.tabular.iloc[idx, 0:]  # get everything
+        filename = tabular['audio_file'] # grab audiofile name
+
+        #Process audio data
+        waveform, _ = librosa.load(os.path.join(self.image_dir, filename), #self.file_list[idx]),
                                    sr=None,
                                    duration=1.0,
                                    mono=True)
 
-        label_char = self.file_list[idx].split("_")[2]  # Assuming the file name is 'label_otherInfo.wav'
-
+        # label_char = self.file_list[idx].split("_")[2]  # Assuming the file name is 'label_otherInfo.wav'
+        label_char = filename.split("_")[2]
+        
         # Encode the label using char_to_idx dictionary
         label = keyboard_reverse_map[label_char]
 
         if self.transform:
             waveform = self.transform(waveform)
 
-        return waveform, label
+        # Grab remaining tabular data
+        tabular = tabular.drop(['audio_file'])
+        tabular = tabular.values()
+        tabular = torch.FloatTensor(tabular)
+
+        return waveform, tabular, label
 
 
 def train():
     # We will use the transformation to convert the audio into Mel spectrogram
     transform = Compose([ToMelSpectrogram(), ToTensor()])
 
+    # Load in Audiodataset and split
     dataset = AudioDataset(AUDIO_DIR, transform=transform)
     train_set, val_set = train_test_split(dataset, test_size=0.2) #, stratify=dataset.label)
     train_loader = DataLoader(dataset=train_set, batch_size=16, shuffle=True)
     val_loader = DataLoader(dataset=val_set, batch_size=16, shuffle=True)
 
+    # Load in CoATNet model
     model = CoAtNet(num_classes=48)  # Assuming we have this class implemented following the paper or using a library
     model = model.to(device)
+
+    # 
     optimizer = optim.Adam(model.parameters(), lr=5e-4)
     criterion = nn.CrossEntropyLoss()
 
-    num_epochs = 1100
+    #
+    num_epochs = 5 #1100
 
     for epoch in range(num_epochs):
         model.train()
-        for inputs, labels in train_loader:
+        for inputs, tabular, labels in train_loader:
             inputs = inputs.to(device)
             labels = labels.to(device)
 
