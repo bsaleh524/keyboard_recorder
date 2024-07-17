@@ -11,7 +11,7 @@ import pandas as pd
 import pickle
 import librosa
 import os
-from CoAtNet import CoAtNet
+from CoAtNet import CoAtNet_mech
 if torch.cuda.is_available():
     device = torch.device("cuda")
 elif torch.backends.mps.is_available():
@@ -29,6 +29,7 @@ keyboard_dict = { # make lowercase
 keyboard_reverse_map = {v: k for k, v in keyboard_dict.items()}
 # Assume we have the following paths. Depend on your system, it could vary
 AUDIO_DIR = 'preprocessed_data/'
+TABULAR_FILE = 'preprocessed_data/keyboard_tabular_data.pkl'
 MODEL_PATH = 'models/model.pt'
 
 
@@ -77,7 +78,7 @@ class AudioDataset(torch.utils.data.Dataset):
 
         # Grab remaining tabular data
         tabular = tabular.drop(['audio_file'])
-        tabular = tabular.values()
+        tabular = tabular.tolist()
         tabular = torch.FloatTensor(tabular)
 
         return waveform, tabular, label
@@ -88,13 +89,13 @@ def train():
     transform = Compose([ToMelSpectrogram(), ToTensor()])
 
     # Load in Audiodataset and split
-    dataset = AudioDataset(AUDIO_DIR, transform=transform)
+    dataset = AudioDataset(AUDIO_DIR, pickle_file=TABULAR_FILE, transform=transform)
     train_set, val_set = train_test_split(dataset, test_size=0.2) #, stratify=dataset.label)
     train_loader = DataLoader(dataset=train_set, batch_size=16, shuffle=True)
     val_loader = DataLoader(dataset=val_set, batch_size=16, shuffle=True)
 
     # Load in CoATNet model
-    model = CoAtNet(num_classes=48)  # Assuming we have this class implemented following the paper or using a library
+    model = CoAtNet_mech(tabular_neurons=4, num_classes=48)  # Assuming we have this class implemented following the paper or using a library
     model = model.to(device)
 
     # 
@@ -102,18 +103,19 @@ def train():
     criterion = nn.CrossEntropyLoss()
 
     #
-    num_epochs = 5 #1100
+    num_epochs = 50 #1100
 
     for epoch in range(num_epochs):
         model.train()
-        for inputs, tabular, labels in train_loader:
-            inputs = inputs.to(device)
+        for images, tabular, labels in train_loader:
+            images = images.to(device)
+            tabular = tabular.to(device)
             labels = labels.to(device)
 
             optimizer.zero_grad()
 
             # Forward pass
-            outputs = model(inputs)
+            outputs = model(images, tabular)
             loss = criterion(outputs, labels)
 
             # Backward and optimize
@@ -128,10 +130,12 @@ def train():
             with torch.no_grad():
                 correct = 0
                 total = 0
-                for inputs, labels in val_loader:
-                    inputs = inputs.to(device)
+                for images, tabular, labels in val_loader:
+                    images = images.to(device)
+                    tabular = tabular.to(device)
                     labels = labels.to(device)
-                    outputs = model(inputs)
+
+                    outputs = model(images, tabular)
                     _, predicted = torch.max(outputs.data, 1)
                     total += labels.size(0)
                     correct += (predicted == labels).sum().item()
