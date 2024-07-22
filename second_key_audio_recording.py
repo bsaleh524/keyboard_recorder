@@ -6,6 +6,7 @@ import time
 import threading
 import os
 from datetime import datetime
+from printout import keyboard_layout
 
 # Ensure the data directory exists
 if not os.path.exists('data/key_data'):
@@ -24,12 +25,11 @@ forbidden_keys = {'\\': 'bcksl', '\'': 'apost', '/': 'fwdsl', keyboard.Key.space
 
 # Parameters for audio recording
 sample_rate = 44100  # Sample rate in Hz
-recording_duration = 1.5  # Duration to record after each key press in seconds
-number_of_recordings = 25
 current_key = None
 device_index = None
 audio_buffer = []
 recording_device_info = {}
+desired_key_count = 25
 
 def list_devices():
     devices = sd.query_devices()
@@ -44,12 +44,29 @@ def select_device():
     recording_device_info = {micinfo: devices[device_index][micinfo] for micinfo in devices[device_index].keys()}
     return device_index
 
+def remove_keys_before_start_key(start_key):
+    # Convert the dictionary to a list of tuples (key, value)
+    items = list(keyboard_dict.items())
+
+    # Find the index of the start_key
+    start_index = items.index((start_key, keyboard_dict[start_key]))
+
+    if start_index is None:
+        raise ValueError(f"Key '{start_key}' not found in dictionary")
+
+    # Remove all items before the start_index
+    remaining_items = items[start_index:]
+
+    # Convert the remaining items back to a dictionary
+    remaining_dict = dict(remaining_items)
+    return remaining_dict
+
 def audio_callback(indata, frames, time, status):
     if status:
         print(status)
     audio_buffer.extend(indata.copy())
 
-def record_audio(device, duration, start_event, stop_event):
+def record_audio(device, start_event, stop_event):
     global audio_buffer
     audio_buffer = []
 
@@ -57,65 +74,67 @@ def record_audio(device, duration, start_event, stop_event):
     with stream:
         stream.start()
         start_event.set()  # Signal that recording has started
-        stop_event.wait(duration)  # Wait for the stop signal or timeout
+        stop_event.wait()  # Wait for the stop signal
         stream.stop()
 
 def on_press(key):
-    global current_key
+    global current_key, press_count
     try:
         k = key.char
     except AttributeError:
         k = str(key)
 
+    if key == keyboard.Key.space:
+        print("Spacebar key pressed")
+        key_log.append((k, time.time()))
+        press_count += 1
+        print(f"Key {k} pressed.")
+        if press_count >= desired_key_count:
+            stop_event.set()  # Signal to stop recording
+    
     if k == current_key:
         key_log.append((k, time.time()))
-        print(f"Key {k} pressed.")
-        stop_event.set()  # Signal to stop recording
+        press_count += 1
+        print(f"Key {k} pressed. Count: {press_count}")
+        if press_count >= desired_key_count:
+            stop_event.set()  # Signal to stop recording
 
 def on_release(key):
     if key == keyboard.Key.esc:
         return False
 
 def main():
-    global device_index, current_key, stop_event
+    global device_index, current_key, stop_event, press_count
     device_index = select_device()
-    keys_to_press = list(keyboard_dict.values())
+    print(keyboard_layout)
+    print(keyboard_dict)
+    starting_idx = input("Select the index to start at.")
+    resorted_dict = remove_keys_before_start_key(int(starting_idx)) # reorder_keyboard_dict(int(starting_idx))
+    keys_to_press = list(resorted_dict.values())
     print("Press ESC to stop.")
-    print("\nYou will be prompted to press each key 25 times. Wait for the countdown before pressing anything.")
+    print(f"\nYou will be prompted to press each key {desired_key_count} times after a countdown completes.")
 
     with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
         for key in keys_to_press:
             print(f"\nCurrent key to record is: {key}.")
             print(f"Press ENTER to start recording for this key.")
             input()
-            created_yamls = []
-            combined_recording = []
+            time.sleep(0.5)
+            press_count = 0
+            current_key = key
+            start_event = threading.Event()
+            stop_event = threading.Event()
+            recording_thread = threading.Thread(target=record_audio, args=(device_index, start_event, stop_event))
+            recording_thread.start()
+            for i in range(3, 0, -1):
+                print(f"Starting in {i}...")
+                time.sleep(1)
+            start_event.wait()  # Wait until recording has started
+            print(f"Press {current_key} now {desired_key_count} times!")
 
-            while len(created_yamls) < number_of_recordings:
-                current_key = key
-                start_event = threading.Event()
-                stop_event = threading.Event()
-                recording_thread = threading.Thread(target=record_audio, args=(device_index, recording_duration, start_event, stop_event))
-                recording_thread.start()
-                start_event.wait()  # Wait until recording has started
-                for i in range(2, 0, -1):
-                    print(f"Starting in {i}...")
-                    time.sleep(1)
-                print(f"Press {current_key} now!")
-                stop_event.wait()  # Wait until the key is pressed or timeout
-                recording_thread.join()
+            recording_thread.join()
 
-                combined_recording.extend(audio_buffer)
-
-                if stop_event.is_set():
-                    created_yamls.append(current_key)
-                else:
-                    print(f"No key press detected. Reprompting for {current_key}.")
-
-                if not listener.running:
-                    break
-
-            # Save combined recording
+            # Save the recording
             current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
             if current_key in forbidden_keys.keys():
                 filekey = forbidden_keys[current_key]
@@ -123,12 +142,12 @@ def main():
             else:
                 filename = f"data/key_data/key_press_{current_key}_{current_time}.wav"
 
-            combined_recording = np.array(combined_recording)
+            combined_recording = np.array(audio_buffer)
             wav.write(filename, sample_rate, np.int16(combined_recording * 32767))
-            print(f"Combined audio saved to {filename}")
+            print(f"Audio saved to {filename}")
 
-            print(f"\n\nFinished recording {current_key} {number_of_recordings} times.")
-            print(f"\n\nCheck the recording is audible and not static.(only the first time)")
+            print(f"\n\nFinished recording {current_key} {desired_key_count} times.")
+            print(f"\n\nCheck the recording is audible and not static (only the first time).")
             print(f"Press Enter to continue to the next key and wait for the prompt.")
             input()
 

@@ -49,6 +49,9 @@ def save_to_yaml(filename, keyboard_name, keyboard_type, switch_color, keyboard_
     print(f"Configuration saved to {filename}")
 
 def main():
+    # Ensure the data directory exists
+    if not os.path.exists('data/key_data'):
+        os.makedirs('data/key_data')
     keyboard_sizes = {
         6: 'Unk',
         5: '100%_FullSize',
@@ -60,7 +63,7 @@ def main():
     }
     
     keyboard_name, keyboard_type, switch_color, keyboard_size = get_user_input(keyboard_layout, key_instructions, switches, keyboard_sizes)
-    config_filename = f"{keyboard_name}_config.yaml"
+    config_filename = f"data/key_data/{keyboard_name}_config.yaml"
     save_to_yaml(config_filename, keyboard_name, keyboard_type, switch_color, keyboard_size)
     print("Configuration saved. Exiting setup.")
 
