@@ -1,5 +1,7 @@
 # keyboard_recorder
-Data collection of keyboard and microhpone info per Adavanced Applied Machine Learning for JHU's research project(Summer 2024).
+Data collection of keyboard and microphone info per Adavanced Applied Machine Learning for JHU's research project(Summer 2024).
+
+Link to original paper dataset: https://github.com/JBFH-Dev/Keystroke-Datasets/tree/main
 
 ```python
 \_______________________MICROPHONE_________________________/
