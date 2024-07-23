@@ -39,8 +39,10 @@ Data collection of keyboard and microhpone info per Adavanced Applied Machine Le
 
 `pip install -r requirements.txt`
 
-To record keys, use `python key_audio_recorder.py`
-To record a sentence, use `python sentence_audio_recorder.py`
+## Steps
+
+1. Record your keyboard information from `python first_keyboard_setup_info.py`
+2. To record keys, use `python second_key_audio_recorder.py`
 
 ## Privacy Concerns
 
@@ -49,55 +51,8 @@ The only data collected is the keyboard information you personally provide in th
 Here is an output of information collected for each key press. You can find this in the `sample_data` folder.
 
 ```yaml
-default_high_input_latency: 0.0421875
-default_high_output_latency: 0.1
-default_low_input_latency: 0.03285416666666666
-default_low_output_latency: 0.01
-default_samplerate: 48000.0
-hostapi: 0
-index: 0
-key_pressed: /
 keyboard_name: Macbook Pro 2021
 keyboard_size: 65%_Compact(Default for Macbooks)
 keyboard_type: scissor
-max_input_channels: 1
-max_output_channels: 0
 name: MacBook Pro Microphone
-switch_color: null
-timestamp: 1720009201
-```
-
-And here for a sentence:
-
-```yaml
-keystrokes:
-- w
-- a
-- d
-- d
-- u
-- p
-- Key.space
-- d
-- e
-- m
-- o
-- n
-- s
-- ','
-- Key.space
-- i
-- t
-- s
-- Key.space
-- m
-- e
-- ','
-- Key.space
-- y
-- a
-- Key.space
-- b
-- o
-- i
 ```
