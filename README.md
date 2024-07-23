@@ -3,6 +3,7 @@ Data collection of keyboard and microphone info per Adavanced Applied Machine Le
 
 Link to original paper dataset: https://github.com/JBFH-Dev/Keystroke-Datasets/tree/main
 
+multi-modal modeling: https://rosenfelder.ai/multi-input-neural-network-pytorch/
 ```python
 \_______________________MICROPHONE_________________________/
 |__________________________________________________________|
