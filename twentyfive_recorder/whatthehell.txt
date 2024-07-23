@@ -1,5 +1,0 @@
-- soundfile refuses to save even though it should be able to
-- You need a script to just ask for 25 key presses per desired key
-- You need to plot the return spectrogram to see:
-    - Did we grab another peak when we didn't want to
-    - Is this spectrogram even long enough(from the regular librosa preprocessing we'll do?)
