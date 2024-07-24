@@ -15,6 +15,7 @@ switches = {
     13: "Halo True",
     14: "Unk/Not here(Clicky)",
     15: "Unk/Not here(Smooth)",
+    16: "Unk/Not here(Linear)"
 }
 
 keyboard_layout = """
