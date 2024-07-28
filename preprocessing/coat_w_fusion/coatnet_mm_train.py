@@ -20,8 +20,7 @@ else:
     device = torch.device("cpu")
 # Suppress specific warnings from librosa regarding depreciation
 import warnings
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=FutureWarning, module="librosa")
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 keyboard_dict = { # make lowercase
     0: '`', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '0', 11: '-', 12: '=',
@@ -46,7 +45,7 @@ class AudioDataset(torch.utils.data.Dataset):
         self.transform = transform
         # self.file_list = os.listdir(self.image_dir)
         self.tabular = pd.read_pickle(pickle_file)
-        self.tabular_neurons = len(self.tabular.columns)
+        self.tabular_neurons = len(self.tabular.columns) - 1  # Subtract away audio file name
 
     def __len__(self):
         # return len(self.file_list)
@@ -114,6 +113,8 @@ def train(audio_dir,
     #
     num_epochs = epochs #1100
 
+    training_losses = []
+    validation_losses = []
 
     for epoch in range(num_epochs):
         model.train()
@@ -132,28 +133,31 @@ def train(audio_dir,
             loss.backward()
             optimizer.step()
         
-        print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item()}")
-
+        training_losses.append(loss.item())
+        
         # Validation
-        if (epoch + 1) % 5 == 0:
-            model.eval()
-            with torch.no_grad():
-                correct = 0
-                total = 0
-                for images, tabular, labels in val_loader:
-                    images = images.to(device)
-                    tabular = tabular.to(device)
-                    labels = labels.to(device)
+        model.eval()
+        with torch.no_grad():
+            correct = 0
+            total = 0
+            for images, tabular, labels in val_loader:
+                images = images.to(device)
+                tabular = tabular.to(device)
+                labels = labels.to(device)
 
-                    outputs = model(images, tabular)
-                    _, predicted = torch.max(outputs.data, 1)
-                    total += labels.size(0)
-                    correct += (predicted == labels).sum().item()
+                outputs = model(images, tabular)
+                val_loss = criterion(outputs, labels)###Finish this
 
-                print(f"Validation Accuracy: {correct/total}")
+                _, predicted = torch.max(outputs.data, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+
+            print(f"Validation Accuracy: {correct/total}")
+        validation_losses.append(val_loss.item())
+        print(f"Epoch [{epoch + 1}/{num_epochs}] || Train Loss: {training_losses[-1]:.4f} || Val Loss: {validation_losses[-1]:.4f} || Val Accuracy: {correct/total}")
 
     torch.save(model.state_dict(), model_path)
-    return model.state_dict()
+    return model.state_dict(), training_losses, validation_losses
 
 if __name__ == "__main__":
     AUDIO_DIR = 'preprocessed_data/'
