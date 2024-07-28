@@ -166,3 +166,4 @@ data_copy/
 preprocessed_data/
 *.wav
 *.yaml
+*.DS_Store
