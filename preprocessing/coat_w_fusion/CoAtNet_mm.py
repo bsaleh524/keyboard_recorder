@@ -1,9 +1,9 @@
 import torch
 from torch import nn
 
-class CoAtNet_mech(nn.Module):
+class CoAtNet_multimodal(nn.Module):
     def __init__(self, tabular_neurons=10, num_classes=36):
-        super(CoAtNet_mech, self).__init__()
+        super(CoAtNet_multimodal, self).__init__()
 
         # Convolutional part
         self.conv_layers = nn.Sequential(

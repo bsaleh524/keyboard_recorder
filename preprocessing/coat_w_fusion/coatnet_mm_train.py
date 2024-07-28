@@ -11,14 +11,17 @@ import pandas as pd
 import pickle
 import librosa
 import os
-from CoAtNet import CoAtNet_mech
+from coat_w_fusion.CoAtNet_mm import CoAtNet_multimodal
 if torch.cuda.is_available():
     device = torch.device("cuda")
 elif torch.backends.mps.is_available():
     device = torch.device("mps")
 else:
     device = torch.device("cpu")
-print(device)
+# Suppress specific warnings from librosa regarding depreciation
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=FutureWarning, module="librosa")
 
 keyboard_dict = { # make lowercase
     0: '`', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '0', 11: '-', 12: '=',
@@ -28,10 +31,6 @@ keyboard_dict = { # make lowercase
 }
 keyboard_reverse_map = {v: k for k, v in keyboard_dict.items()}
 # Assume we have the following paths. Depend on your system, it could vary
-AUDIO_DIR = 'preprocessed_data/'
-TABULAR_FILE = 'preprocessed_data/keyboard_tabular_data.pkl'
-MODEL_PATH = 'models/model.pt'
-
 
 # The following class help transform our input into mel-spectrogram
 class ToMelSpectrogram:
@@ -47,6 +46,7 @@ class AudioDataset(torch.utils.data.Dataset):
         self.transform = transform
         # self.file_list = os.listdir(self.image_dir)
         self.tabular = pd.read_pickle(pickle_file)
+        self.tabular_neurons = len(self.tabular.columns)
 
     def __len__(self):
         # return len(self.file_list)
@@ -84,18 +84,27 @@ class AudioDataset(torch.utils.data.Dataset):
         return waveform, tabular, label
 
 
-def train():
+def train(audio_dir,
+          tabular_pkl_file,
+          model_path,
+          num_classes=48,
+          batch_size=16,
+          split_size=0.2,
+          epochs=1100):
     # We will use the transformation to convert the audio into Mel spectrogram
     transform = Compose([ToMelSpectrogram(), ToTensor()])
 
     # Load in Audiodataset and split
-    dataset = AudioDataset(AUDIO_DIR, pickle_file=TABULAR_FILE, transform=transform)
-    train_set, val_set = train_test_split(dataset, test_size=0.2) #, stratify=dataset.label)
-    train_loader = DataLoader(dataset=train_set, batch_size=16, shuffle=True)
-    val_loader = DataLoader(dataset=val_set, batch_size=16, shuffle=True)
+    dataset = AudioDataset(audio_dir, pickle_file=tabular_pkl_file, transform=transform)
+    train_set, val_set = train_test_split(dataset, test_size=split_size) #, stratify=dataset.label)
+    train_loader = DataLoader(dataset=train_set, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(dataset=val_set, batch_size=batch_size, shuffle=True)
 
     # Load in CoATNet model
-    model = CoAtNet_mech(tabular_neurons=4, num_classes=48)  # Assuming we have this class implemented following the paper or using a library
+    # Assuming we have this class implemented following the paper or using a library
+    model = CoAtNet_multimodal(tabular_neurons=dataset.tabular_neurons,
+                               num_classes=num_classes
+    )
     model = model.to(device)
 
     # 
@@ -103,7 +112,8 @@ def train():
     criterion = nn.CrossEntropyLoss()
 
     #
-    num_epochs = 50 #1100
+    num_epochs = epochs #1100
+
 
     for epoch in range(num_epochs):
         model.train()
@@ -121,7 +131,7 @@ def train():
             # Backward and optimize
             loss.backward()
             optimizer.step()
-
+        
         print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item()}")
 
         # Validation
@@ -142,10 +152,17 @@ def train():
 
                 print(f"Validation Accuracy: {correct/total}")
 
-    torch.save(model.state_dict(), MODEL_PATH)
-
-def main():
-    train()
+    torch.save(model.state_dict(), model_path)
+    return model.state_dict()
 
 if __name__ == "__main__":
-    main()
+    AUDIO_DIR = 'preprocessed_data/'
+    TABULAR_FILE = 'preprocessed_data/keyboard_tabular_data.pkl'
+    MODEL_PATH = 'models/model.pt'
+
+    train(audio_dir=AUDIO_DIR,
+          tabular_pkl_file=TABULAR_FILE,
+          model_path=MODEL_PATH,
+          batch_size=16,
+          split_size=0.2,
+          num_classes=48)
