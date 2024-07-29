@@ -89,6 +89,7 @@ def train(audio_dir,
           num_classes=48,
           batch_size=16,
           split_size=0.2,
+          learn_rate=5e-4,
           epochs=1100):
     # We will use the transformation to convert the audio into Mel spectrogram
     transform = Compose([ToMelSpectrogram(), ToTensor()])
@@ -107,7 +108,7 @@ def train(audio_dir,
     model = model.to(device)
 
     # 
-    optimizer = optim.Adam(model.parameters(), lr=5e-4)
+    optimizer = optim.Adam(model.parameters(), lr=learn_rate)
     criterion = nn.CrossEntropyLoss()
 
     #
@@ -152,7 +153,7 @@ def train(audio_dir,
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
 
-            print(f"Validation Accuracy: {correct/total}")
+            # print(f"Validation Accuracy: {correct/total}")
         validation_losses.append(val_loss.item())
         print(f"Epoch [{epoch + 1}/{num_epochs}] || Train Loss: {training_losses[-1]:.4f} || Val Loss: {validation_losses[-1]:.4f} || Val Accuracy: {correct/total}")
 
