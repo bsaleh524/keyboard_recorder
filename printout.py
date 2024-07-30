@@ -14,7 +14,7 @@ switches = {
     12: "Halo Clear",
     13: "Halo True",
     14: "Unk/Not here(Clicky)",
-    15: "Unk/Not here(Smooth)",
+    15: "Unk/Not here(Tactile)",
     16: "Unk/Not here(Linear)"
 }
 

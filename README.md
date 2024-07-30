@@ -25,7 +25,7 @@ This package isn't meant to be installed. Just run from the cloned/downloaded re
     - `python3 -m venv keyboard_env`
 
 2. Then activate it
-    - Windows (Command Prompt): `source keyboard_env\Scripts\activate`  (IS THIS RIGHT??)
+    - Windows (Command Prompt): `keyboard_env\Scripts\activate`
     - Mac/Linux (Terminal): `source keyboard_env/bin/activate`
 
 3. Install the requirements.
