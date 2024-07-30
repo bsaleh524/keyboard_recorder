@@ -35,13 +35,15 @@ def get_user_input(keyboard_layout, key_instructions, switches, keyboard_sizes):
         switch_color = None
     display_sizes(keyboard_sizes)
     keyboard_size = keyboard_sizes[int(input("Enter the keyboard size index: "))]
-    return keyboard_name, keyboard_type, switch_color, keyboard_size
+    keyboard_material = input("Enter the material of your keyboard(Wood, plastic, aluminum,etc): ")
+    return keyboard_name, keyboard_type, switch_color, keyboard_size, keyboard_material
 
-def save_to_yaml(filename, keyboard_name, keyboard_type, switch_color, keyboard_size):
+def save_to_yaml(filename, keyboard_name, keyboard_type, switch_color, keyboard_size, keyboard_material):
     data = {
         'keyboard_name': keyboard_name,
         'keyboard_type': keyboard_type,
         'keyboard_size': keyboard_size,
+        'keyboard_material': keyboard_material,
         'switch_color': switch_color if keyboard_type.lower() == 'mechanical' else None
     }
     with open(filename, 'w') as yaml_file:
@@ -62,9 +64,9 @@ def main():
         0: '60%_Mini',
     }
     
-    keyboard_name, keyboard_type, switch_color, keyboard_size = get_user_input(keyboard_layout, key_instructions, switches, keyboard_sizes)
+    keyboard_name, keyboard_type, switch_color, keyboard_size, keyboard_material = get_user_input(keyboard_layout, key_instructions, switches, keyboard_sizes)
     config_filename = f"data/key_data/{keyboard_name}_config.yaml"
-    save_to_yaml(config_filename, keyboard_name, keyboard_type, switch_color, keyboard_size)
+    save_to_yaml(config_filename, keyboard_name, keyboard_type, switch_color, keyboard_size, keyboard_material)
     print("Configuration saved. Exiting setup.")
 
 if __name__ == "__main__":
