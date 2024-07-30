@@ -21,9 +21,6 @@ multi-modal modeling: https://rosenfelder.ai/multi-input-neural-network-pytorch/
 |----------------------------------------------------------|
 ```
 
-- `key_audio_recorder.py` records individual keystrokes. Pick a microphone and then it prompts for 10 regular presses of the keys.
-- `sentence_audio_recorder.py` records sentences. Pick a microphone and then prompts for a sentence. After typing, hit escape to finish the recording. 
-
 ## Installation and setup
 * This package isn't meant to be installed. Just run from the cloned down folder. To install dependencies, it requires python 3.9+.
 * Create a virtual environment
