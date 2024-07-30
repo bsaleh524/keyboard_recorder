@@ -34,11 +34,13 @@ This package isn't meant to be installed. Just run from the cloned/downloaded re
 ## Steps
 
 1. Record your keyboard information from `first_keyboard_setup_info.py`. This file will have you select information i need for processing between different keyboards.
-    * `python first_keyboard_setup_info.`
+    * `python first_keyboard_setup_info.py`
 
 2. To record keys, use `second_key_audio_recorder.py`. This will ask for permission to select a microphone and then record your key presses. Ensure your microphone is facing the keyboard and is placed towards the top row. If the microphone is simply next to the keyboard, that's ok too.
     * `python second_ley_audio_recorder.py`
     * You will be asked to record each key press 25 times. If something messes up, you can restart the script and select the next key.
+        * *"Hey man, 25 presses is a lot"*
+        * Yeah I know but the method I setup to collect keystrokes from the audio file isn't professionally robust, it's grad school robust. So I sometimes don't grab 25. I appreciate your patience with this! 😊
 
 ## Privacy Concerns
 
