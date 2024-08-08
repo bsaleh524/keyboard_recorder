@@ -29,7 +29,7 @@ current_key = None
 device_index = None
 audio_buffer = []
 recording_device_info = {}
-desired_key_count = 25
+desired_key_count = 150
 
 def list_devices():
     devices = sd.query_devices()
