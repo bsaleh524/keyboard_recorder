@@ -1,6 +1,8 @@
 # keyboard_recorder
 Data collection of keyboard and microphone info per Adavanced Applied Machine Learning for JHU's research project(Summer 2024). This will collect general keyboard information in a yaml and audio files containing 25 key presses for each key shown in the keyboard below. 
 
+Link to paper of this repository: [report/Saleh-Project.pdf](report/Saleh-Project.pdf)
+
 ```python
 \_______________________MICROPHONE_________________________/
 |__________________________________________________________|
@@ -59,8 +61,6 @@ keyboard_size: 65%_Compact(Default for Macbooks)
 keyboard_type: scissor
 switch_color: null
 ```
-
-Link to paper of this repository: [report/Saleh-Project.pdf](report/Saleh-Project.pdf)
 
 Link to original paper dataset: https://github.com/JBFH-Dev/Keystroke-Datasets/tree/main
 
