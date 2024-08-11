@@ -42,6 +42,10 @@ This package isn't meant to be installed. Just run from the cloned/downloaded re
         * *"Hey man, 25 presses is a lot"*
         * Yeah I know but the method I setup to collect keystrokes from the audio file isn't professionally robust, it's grad school robust. So I sometimes don't grab 25. I appreciate your patience with this! 😊
 
+# Training and testing CoAtNet Fusion Model
+
+Simply run the preprocess_and_train notebook to run all five experiments.
+
 ## Privacy Concerns
 
 The only data collected is the keyboard information you personally provide in the beginning(brand, switch color...), the key pressed, the audio of you typing the key. There is no additional data grabbed and no way data can be traced back to you. I'm just a grad student looking to get an A. Or a B- at the minimum haha.

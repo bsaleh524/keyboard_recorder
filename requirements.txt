@@ -7,3 +7,10 @@ pyyaml
 scipy
 sounddevice
 pyyaml
+tabulate
+pandas
+seaborn
+librosa=0.9.1
+torch
+glob
+soundfile
