@@ -60,6 +60,8 @@ keyboard_type: scissor
 switch_color: null
 ```
 
+Link to paper of this repository: [report/Saleh-Project.pdf](report/Saleh-Project.pdf)
+
 Link to original paper dataset: https://github.com/JBFH-Dev/Keystroke-Datasets/tree/main
 
 multi-modal modeling: https://rosenfelder.ai/multi-input-neural-network-pytorch/
