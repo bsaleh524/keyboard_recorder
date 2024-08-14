@@ -48,7 +48,7 @@ Simply run the `preprocessing/preprocess_and_train.ipynb` notebook to run all fi
 
 ## Running the Tableau Dashboard
 
-The dashboard is already live at [this link](https://public.tableau.com/app/profile/basem.saleh/viz/KeyboardDashboard/Dashboard1) using data from the `data/link.txt` folder. The Tableau dashboard file is included in the Tableau folder for your editing usage.
+The dashboard is already live at [this link](https://public.tableau.com/app/profile/basem.saleh/viz/KeyboardDashboard/Dashboard1) using data from the `data/link.txt` folder. The Tableau dashboard file is included in the Tableau folder for your editing usage. The `preprocess_for_dataviz.ipynb` will preprocess the data required to create the tableau dashboard into two files: `individual_keys.csv` and `keyboard_map_final_df_5.csv`. Both of these are required to create the dashboard. TO run the current dashboard, load in both csvs within this current repository.
 
 ## Privacy Concerns
 
