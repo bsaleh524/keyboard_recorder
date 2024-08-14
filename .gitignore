@@ -167,3 +167,6 @@ preprocessed_data/
 *.wav
 *.yaml
 *.DS_Store
+
+*Zone.Identifier
+data/

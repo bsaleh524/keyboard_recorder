@@ -12,5 +12,6 @@ pandas
 seaborn
 librosa=0.9.1
 torch
+torchvision
 glob
 soundfile
