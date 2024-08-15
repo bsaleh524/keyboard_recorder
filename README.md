@@ -1,5 +1,5 @@
 # keyboard_recorder
-Data collection of keyboard keystrokes for JHU Project. This will collect general keyboard information in a yaml and audio files containing 25 key presses for each key shown in the keyboard below. 
+Data collection of keyboard keystrokes for JHU Project. This will collect general keyboard information in a yaml and audio files containing 25 key presses for each key shown in the keyboard below. Then, scripts to process and train the fusion CoAtNet model will also be here.
 
 ```python
 \_______________________MICROPHONE_________________________/
@@ -45,6 +45,10 @@ All data you personally record should go in the `data/new_data` folder to be inc
 ## Training and testing CoAtNet Fusion Model
 
 Simply run the `preprocessing/preprocess_and_train.ipynb` notebook to run all five experiments. It will automatically preprocess the data and train on all five experiments.
+
+## Inferring:
+
+Use the `infer.ipynb` notebook under the `preprocessing` folder to infer on your own data in the `preprocessed_data/experiments` folders.
 
 ## Running the Tableau Dashboard
 
